@@ -1,4 +1,8 @@
-# HellzGate ESP-NOW â€” experimental community test source
+# HellzGate ESP-NOW - community beta source
+
+> Some people spoon, we fork. Have fun and be safe! - Hellz
+
+**BETA - experimental source for testing and forks, not a final or production release.**
 
 An early community test build for passive Wi-Fi/BLE observation collection.
 Scanner nodes report to a master over ESP-NOW. The FullGate master supports
@@ -39,7 +43,7 @@ Scanner in a hardware slot with ID straps:
 idf.py -B build_scanner "-DSDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.xiao;sdkconfig.fgnode_espnow" "-DSDKCONFIG=build_scanner/sdkconfig" build
 ```
 
-Standalone scanner with an NVS ID (slots 1â€“20):
+Standalone scanner with an NVS ID (slots 1-20):
 ```
 idf.py -B build_nvs "-DSDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.xiao;sdkconfig.fgnode_espnow;sdkconfig.fgnode_espnow_nvs" "-DSDKCONFIG=build_nvs/sdkconfig" build
 ```
