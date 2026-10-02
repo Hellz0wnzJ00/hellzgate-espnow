@@ -1,0 +1,8 @@
+build*/
+sdkconfig
+sdkconfig.old
+sdkconfig_*_out
+*.o
+*.bin
+*.elf
+__pycache__/

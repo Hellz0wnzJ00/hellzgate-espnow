@@ -1,0 +1,387 @@
+menu "hellzgate"
+
+choice HG_ROLE
+    prompt "board role"
+    default HG_ROLE_MASTER
+    help
+      build a separate image for each role
+
+config HG_ROLE_MASTER
+    bool "master, the coordinator"
+
+config HG_ROLE_NODE
+    bool "node, a scanner"
+
+endchoice
+
+config HG_TALLY_MAX_DEVICES
+    int "distinct devices the uniqueness tracker can hold"
+    depends on HG_ROLE_MASTER
+    range 256 131072
+    default 65536
+    help
+      once this fills, totals and the csv carry on unchanged but the unique
+      count stops moving. every further observation of a device that is not in
+      the table is counted in table_full, so that is a count of observations
+      and not of devices.
+      it must stay a power of two, the lookup masks against it.
+
+      the table lives in PSRAM and requires approximately sixteen bytes per
+      device. choose a capacity that fits the target's available memory.
+
+config HG_MAX_NODES
+    int "how many scanner nodes the cluster can hold"
+    range 1 32
+    default 20
+    help
+      all supplied builds select a cluster capacity of 20 scanner IDs.
+      the tally bitmask supports up to 32 IDs for custom configurations.
+      hardware straps encode slots 1-15; use provisioned NVS IDs for slots
+      beyond the available backplane. configured capacity does not establish
+      tested RF throughput;
+      the master receives scanners without allocating a transmit peer per ID.
+
+config HG_NODE_ID
+    int "scanner node id"
+    depends on HG_ROLE_NODE
+    range 0 31
+    default 0
+    help
+      zero-based scanner ID. physical slot 1 is node 0.
+
+config HG_SLOT_TRUST_BUILT_IN
+    bool "let the built in node id count as a real slot"
+    depends on HG_ROLE_NODE
+    default n
+    help
+      enable only for a build assigned a unique HG_NODE_ID. otherwise use
+      hardware straps or provision a unique NVS ID for each scanner.
+
+config HG_REQUIRE_ID
+    bool "send nothing without a real node id"
+    depends on HG_ROLE_NODE
+    default n
+    help
+      a scanner that finds no id on its straps or in nvs falls back to the
+      built in one. over espnow that is another scanner's id, and the master
+      throws away frames it takes for copies of that scanner's. with this on,
+      a scanner with no real id sends nothing and says so every ten seconds.
+      on in the fullgate espnow scanner images.
+
+config HG_SLOT_STRAPS
+    bool "read the slot number off the address straps"
+    depends on HG_ROLE_NODE
+    default n
+    help
+      the slot hardware ties four gpio pins to 3v3 or ground to give each slot its
+      address. off by default because a board on the bench has nothing on those
+      pins and would read slot 0. turn it on only with the matching slot hardware.
+
+config HG_GNSS
+    bool "read a gnss receiver on the master"
+    depends on HG_ROLE_MASTER
+    default n
+    help
+      enables the receiver UART and parses GGA/RMC. when disabled, exported
+      observations have no GNSS timestamp or position.
+
+config HG_PENDING_MAX
+    int "observations held while waiting for a date"
+    depends on HG_GNSS
+    default 30000
+    help
+      observations received before a GNSS date are held, then timestamped
+      using their receive uptime and the GNSS-derived time offset. this is how many
+      fit. a busy start can be tens of thousands, so it lives in psram. past
+      this the extra rows go out with the timestamp column empty, and the
+      console says how many.
+
+config HG_PENDING_WAIT_S
+    int "seconds to wait for a date before giving up"
+    depends on HG_GNSS
+    default 180
+    help
+      if no valid date arrives within this interval, held observations are
+      written with empty timestamps and the session filename uses uptime.
+
+config HG_GNSS_UART
+    int "uart the receiver is on"
+    depends on HG_GNSS
+    range 1 1
+    default 1
+    help
+      the receiver uses UART1, separate from the configured console interface.
+
+config HG_GNSS_RX_GPIO
+    int "pin the receiver talks on"
+    depends on HG_GNSS
+    default 4
+    help
+      connect the receiver TX to the verified master RX pin. check the
+      board pin map and receiver documentation before changing wiring.
+      USB Serial/JTAG is separate from this receiver UART.
+
+config HG_GNSS_TX_GPIO
+    int "pin the receiver listens on"
+    depends on HG_GNSS
+    default 5
+    help
+      nothing is sent to a neo-6m at the moment so this pin is only reserved.
+
+config HG_GNSS_BAUD
+    int "receiver baud rate"
+    depends on HG_GNSS
+    default 9600
+    help
+      a neo-6m leaves the factory at 9600. modules that have been reconfigured
+      run at 38400 or 115200.
+
+config HG_SCREEN
+    bool "drive an ssd1306 screen"
+    depends on HG_ROLE_MASTER
+    default n
+    help
+      the panel uses dedicated software-driven SDA/SCL pins and is detected
+      at address 0x3c or 0x3d.
+
+config HG_SCREEN_SH1106
+    bool "the panel is an sh1106 rather than an ssd1306"
+    depends on HG_SCREEN
+    default n
+    help
+      select the actual display controller; size does not identify it.
+
+      three things change. the charge pump is 0xad 0x8b instead of 0x8d 0x14,
+      the page addressing command the ssd1306 wants is left out because the
+      sh1106 has no other mode, and the visible columns sit in the middle of a
+      wider memory, which is what the offset below is for.
+
+config HG_SCREEN_COL_OFFSET
+    int "first column the panel shows"
+    depends on HG_SCREEN
+    range 0 4
+    default 2 if HG_SCREEN_SH1106
+    default 0
+    help
+      0 for a real ssd1306. an sh1106 has 132 columns of memory and shows the
+      middle 128, so it wants 2. the symptom of getting it wrong is the picture
+      sliding two pixels sideways with a stripe of rubbish at one edge.
+
+config HG_SD
+    bool "write session files to a microsd card"
+    depends on HG_ROLE_MASTER
+    default n
+    help
+      mounts a card over spi and writes one wigle csv per run. a missing or
+      unreadable card is not fatal, the console keeps carrying the rows.
+
+config HG_SD_BENCH_CHECKS
+    bool "extra card checks that need jumper wires"
+    depends on HG_SD
+    default n
+    help
+      enables active GPIO, SPI loopback and pin continuity diagnostics on a
+      mount failure. these drive pins and require disconnected modules and
+      verified jumpers. leave disabled for normal operation; mount errors are
+      still logged without running these wiring checks.
+
+config HG_SD_OWN_DRIVER
+    bool "try the experimental SD driver before the ESP-IDF driver"
+    depends on HG_SD
+    default n
+    help
+      the ESP-IDF driver is the default. the experimental driver provides
+      an alternative for SD initialization diagnostics, but reads capacity
+      incorrectly on some cards. leave this disabled for normal use.
+
+config HG_SD_MISO_GPIO
+    int "card miso pin"
+    depends on HG_SD
+    default 9
+
+config HG_SD_MOSI_GPIO
+    int "card mosi pin"
+    depends on HG_SD
+    default 8
+
+config HG_SD_SCLK_GPIO
+    int "card clock pin"
+    depends on HG_SD
+    default 6
+
+config HG_SD_CS_GPIO
+    int "card chip select pin"
+    depends on HG_SD
+    default 10
+    help
+      gpio12, 8, 9 and 10 are the slot straps on a scanner board. the master does
+      not read straps, so on that board they are free and the card sits on
+      them. do not copy these onto a node.
+
+config HG_SD_FREQ_KHZ
+    int "card clock in khz"
+    depends on HG_SD
+    default 20000
+    help
+      SPI clock after card initialization. use a speed validated for the
+      target board, card and wiring. the supplied FullGate overlay uses 400 kHz.
+
+config HG_SCREEN_SDA_GPIO
+    int "panel sda pin"
+    depends on HG_SCREEN
+    default 1
+
+config HG_SCREEN_SCL_GPIO
+    int "panel scl pin"
+    depends on HG_SCREEN
+    default 0
+
+config HG_FAN
+    bool "switch a fan"
+    depends on HG_ROLE_MASTER
+    default n
+    help
+      the fullgate board switches the fan with an AP22811 load switch, so the
+      firmware only drives its enable pin. high is on. do not wire a fan
+      straight to a GPIO; use the board's rated switching and power circuit.
+
+config HG_FAN_GPIO
+    int "fan enable pin"
+    depends on HG_FAN
+    default 25
+
+config HG_FAN_ON_AT_BOOT
+    int "fan state at boot, 1 on or 0 off"
+    depends on HG_FAN
+    range 0 1
+    default 1
+
+config HG_PIN_FINDER
+    bool "boot into the pin finder instead of the firmware"
+    default n
+    help
+      identifies the header GPIO connected to a 3v3 test wire and prints
+      that GPIO twice a second. the console pins and
+      anything the flash or psram owns are left out, touching those takes the
+      chip down mid sentence.
+
+      for bringing up a board whose header is not labelled, or checking a
+      breakout is connected to the intended pin. nothing else starts, so this is
+      a bench tool and not something to ship.
+
+config HG_WEB
+    bool "serve the local page and the json endpoint"
+    depends on HG_ROLE_MASTER
+    default n
+    help
+      the master puts up its own access point and serves one page off it. there
+      is no router and no internet, someone stands next to the unit, joins the
+      network and opens http://192.168.4.1/.
+
+      the access point shares the radio with espnow, so it is forced onto the
+      espnow channel below. it cannot be anywhere else without the cluster
+      going deaf.
+
+config HG_WEB_AP_AT_BOOT
+    bool "bring the access point up at boot"
+    depends on HG_WEB
+    default y
+    help
+      off, the unit boots with the access point disabled and scans and logs as normal.
+      the access point then comes up when the button is held, and goes down on
+      the next hold or from the page itself. neither stops a run.
+
+config HG_WEB_BUTTON_GPIO
+    int "button that toggles the access point"
+    depends on HG_WEB
+    default 28
+    help
+      the boot button on a xiao. it is only a strapping pin while the chip is
+      resetting, after that it is an ordinary input, so it costs no pins on the
+      header. set it to -1 if there is no button.
+
+config HG_WEB_SSID
+    string "access point name"
+    depends on HG_WEB
+    default "hellzgate"
+
+config HG_WEB_PASS
+    string "access point password"
+    depends on HG_WEB
+    default "hellzgate"
+    help
+      wpa2 needs at least eight characters. anything shorter is treated as no
+      password and the network comes up open.
+
+config HG_ESPNOW_CHANNEL
+    int "espnow channel"
+    range 1 13
+    default 1
+    help
+      master and nodes have to sit on the same channel or they never hear
+      each other. nodes leave it to scan and come back to report.
+
+config HG_SCAN_CHUNK
+    int "channels scanned before going home to report"
+    range 1 32
+    default 8
+    help
+      after each chunk the scanner returns to the ESP-NOW channel to service
+      the link. a due heartbeat can also request an earlier yield between
+      channels. validate timing under the intended Wi-Fi/BLE load.
+
+config HG_RING_RECORDS
+    int "records a node can stage before it starts dropping"
+    default 128
+    help
+      send just stages into this ring, the master collects. if it fills the
+      oldest go first and the drop is counted, never silently.
+
+config HG_CSV_ONLY
+    bool "console carries only the csv"
+    depends on HG_ROLE_MASTER
+    default n
+    help
+      silences every log line on the master once it starts, so the console is a
+      CSV stream. leave disabled to retain diagnostic logs during testing;
+      enable for direct CSV capture from the serial port.
+
+config HG_BEACON_MS
+    int "how often the master announces itself in ms"
+    range 50 5000
+    default 250
+    help
+      scanners discover the master from these beacons. shorter intervals
+      provide more discovery opportunities but consume more airtime on the
+      shared channel. the beacon payload is thirteen bytes.
+
+config HG_HEARTBEAT_MS
+    int "heartbeat interval in ms"
+    default 2000
+    help
+      provisional. validate this interval against full dual-band sweeps
+      on the target hardware.
+
+config HG_HEARTBEAT_MISSES
+    int "misses before a node counts as down"
+    range 1 255
+    default 3
+    help
+      any accepted frame refreshes liveness. mark a node down after
+      HG_HEARTBEAT_MS multiplied by this value without accepted traffic.
+
+config HG_TEST_FAKE_LOST_ACK_EVERY
+    int "test, treat every nth espnow ack as lost"
+    depends on HG_ROLE_NODE
+    range 0 1000
+    default 0
+    help
+      0 on anything that ships. for proving the lost ack path over espnow.
+      the scanner sends a frame, the master receives it, and the scanner
+      then acts as if the ack never came and sends it again under the same
+      sequence. the master has to throw the second copy away.
+
+      each one is logged on the scanner. the master's dupes count for that
+      node should match, and the csv should hold each record once.
+
+endmenu
