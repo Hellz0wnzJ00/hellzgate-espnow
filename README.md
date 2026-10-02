@@ -23,6 +23,38 @@ The wired scanner transport is excluded. Display I2C remains because it drives
 the screen; it does not carry scanner records. MIT license: see LICENSE.
 ESP-IDF and its dependencies retain their separate licenses.
 
+## License and credit
+
+Released under the [MIT License](LICENSE), copyright (c) 2026 Sean Clossey.
+You may use, modify, fork, share and sell the software under those terms.
+Keep the copyright notice and license in copies or substantial portions.
+
+If you build on HellzGate ESP-NOW, please credit Sean Clossey (Hellz) and link
+back to this repository. Attribution helps others find the original project
+and keeps the community growing. Suggested credit:
+
+> Based on HellzGate ESP-NOW by Sean Clossey (Hellz).
+> https://github.com/Hellz0wnzJ00/hellzgate-espnow
+
+The README credit and link are appreciated, not additional license conditions.
+No credit on a device screen, app interface or boot screen is required.
+
+## Educational and authorized use
+
+HellzGate ESP-NOW is intended for education, research and authorized testing.
+Use it only with equipment and in environments where you have permission;
+obtain authorization before testing systems belonging to others. You are
+responsible for your use, applicable laws and regulations, and respecting
+others' privacy. The project does not endorse unauthorized access,
+interference or other misuse. This is responsible-use guidance, not an
+additional restriction on the rights granted by the MIT License.
+
+The software is experimental and provided "AS IS", without warranty. Use it
+at your own risk. To the extent permitted by applicable law, Sean Clossey
+(Hellz), as the owner of the HellzGate project, and other authors or copyright
+holders disclaim liability for claims, damages or other liability arising
+from the software or its use, as set out in [LICENSE](LICENSE).
+
 ## Build
 
 Use an ESP-IDF environment targeting ESP32-C5. The starting firmware specifies
