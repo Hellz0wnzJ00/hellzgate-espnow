@@ -13,7 +13,7 @@ This source is also intended for forks using XIAO ESP32-C5 boards and custom
 hardware. The FullGate configurations are board-specific examples, not universal
 pin assignments. See the adaptation guidance below before using them elsewhere.
 
-Owner: **Sean Clossey**. HellzGate is the project name.
+**HellzGate Project by Hellz (Sean Clossey).**
 
 ## Package
 
@@ -29,11 +29,11 @@ Released under the [MIT License](LICENSE), copyright (c) 2026 Sean Clossey.
 You may use, modify, fork, share and sell the software under those terms.
 Keep the copyright notice and license in copies or substantial portions.
 
-If you build on HellzGate ESP-NOW, please credit Sean Clossey (Hellz) and link
-back to this repository. Attribution helps others find the original project
-and keeps the community growing. Suggested credit:
+If you build on HellzGate ESP-NOW, please credit the **HellzGate Project by
+Hellz (Sean Clossey)** and link back to this repository. Attribution helps
+others find the original project and keeps the community growing. Suggested credit:
 
-> Based on HellzGate ESP-NOW by Sean Clossey (Hellz).
+> Based on the HellzGate Project by Hellz (Sean Clossey).
 > https://github.com/Hellz0wnzJ00/hellzgate-espnow
 
 The README credit and link are appreciated, not additional license conditions.
@@ -50,10 +50,10 @@ interference or other misuse. This is responsible-use guidance, not an
 additional restriction on the rights granted by the MIT License.
 
 The software is experimental and provided "AS IS", without warranty. Use it
-at your own risk. To the extent permitted by applicable law, Sean Clossey
-(Hellz), as the owner of the HellzGate project, and other authors or copyright
-holders disclaim liability for claims, damages or other liability arising
-from the software or its use, as set out in [LICENSE](LICENSE).
+at your own risk. To the extent permitted by applicable law, Hellz (Sean Clossey),
+as the owner of the HellzGate Project, disclaims liability for claims, damages
+or other liability arising from the software or its use, as set out in
+[LICENSE](LICENSE).
 
 ## Build
 
