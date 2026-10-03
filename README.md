@@ -1,8 +1,10 @@
-# HellzGate ESP-NOW - community beta source
+# HellzGate ESP-NOW Cluster Firmware — Open-Source Beta
 
 > Some people spoon, we fork. Have fun and be safe! - Hellz
 
 **BETA - experimental source for testing and forks, not a final or production release.**
+
+**Master + scanner/node firmware for ESP32-C5.**
 
 An early community test build for passive Wi-Fi/BLE observation collection.
 Scanner nodes report to a master over ESP-NOW. The FullGate master supports
@@ -29,7 +31,7 @@ Released under the [MIT License](LICENSE), copyright (c) 2026 Sean Clossey.
 You may use, modify, fork, share and sell the software under those terms.
 Keep the copyright notice and license in copies or substantial portions.
 
-If you build on HellzGate ESP-NOW, please credit the **HellzGate Project by
+If you build on HellzGate ESP-NOW Cluster Firmware, please credit the **HellzGate Project by
 Hellz (Sean Clossey)** and link back to this repository. Attribution helps
 others find the original project and keeps the community growing. Suggested credit:
 
@@ -41,7 +43,7 @@ No credit on a device screen, app interface or boot screen is required.
 
 ## Educational and authorized use
 
-HellzGate ESP-NOW is intended for education, research and authorized testing.
+HellzGate ESP-NOW Cluster Firmware is intended for education, research and authorized testing.
 Use it only with equipment and in environments where you have permission;
 obtain authorization before testing systems belonging to others. You are
 responsible for your use, applicable laws and regulations, and respecting
