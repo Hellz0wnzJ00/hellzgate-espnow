@@ -36,7 +36,7 @@ Hellz (Sean Clossey)** and link back to this repository. Attribution helps
 others find the original project and keeps the community growing. Suggested credit:
 
 > Based on the HellzGate Project by Hellz (Sean Clossey).
-> https://github.com/Hellz0wnzJ00/hellzgate-espnow
+> https://github.com/Hellz0wnzJ00/hellzgate-espnow-cluster
 
 The README credit and link are appreciated, not additional license conditions.
 No credit on a device screen, app interface or boot screen is required.
